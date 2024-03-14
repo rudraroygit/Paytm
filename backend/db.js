@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 // MongoDB connection URL
-const mongoURI = 'mongodb+srv://roybuburpr08:13eyDmgoCRQVuFJl@cluster0.vfnqtl9.mongodb.net/paytm'; // Replace 'mydatabase' with your database name
+const {URL} = require('./config')
 
 // Connect to MongoDB
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Connected to MongoDB');
   })

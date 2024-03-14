@@ -3,39 +3,48 @@ const jwt= require('jsonwebtoken')
 const router= express.Router();
 const zod= require('zod')
 const {jwtSecret}=require('../config')
-const {User}=require('../db')
+const {User,Account}=require('../db')
 const {authMiddleware}= require('../middleware')
+
 const correctBody= zod.object({
     username: zod.string().email(),
     password: zod.string(),
-    fisrtname: zod.string(),
+    firstname: zod.string(),
     lastname: zod.string()
-})
+});
 
 
-router.post('/signup',async (req,res)=>{
-        const {success}= correctBody.safeParser(req.body);
+router.post("/signup",async (req,res)=>{
+        const {success}= correctBody.safeParse(req.body);
+        
         if(!success){
             return res.json({
-                message: 'Email already taken / Incorrect inputs'
+                message: 'Incorrect inputs'
             })
         }
 
         const existingUser= await User.findOne({username: req.body.username})
         if(existingUser){
             return res.json({
-                message: 'Email already taken / Incorrect inputs'
+                message: 'Email already taken '
             })
         }
 
         const user= await User.create({
-            username: req.bodu.username,
+            username: req.body.username,
             password: req.body.password,
-            firstname:req.body.firstName,
-            lastname: req.body.lastName
+            firstname:req.body.firstname,
+            lastname: req.body.lastname
         })
 
         const userId= user._id;
+
+        await Account.create({
+            userId,
+            balance: 1 + Math.random() * 10000
+        })
+
+
         const token= jwt.sign({
             userId
         },jwtSecret);
@@ -48,13 +57,15 @@ router.post('/signup',async (req,res)=>{
 })
 
 
+
+
 router.post( '/signin',async(req,res) =>{
       
     const email= req.body.username;
     const password= req.body.password;
     if(!email || !password){
        return  res.json({
-            message: 'Email already taken / Incorrect inputs'
+            message: 'Incorrect inputs'
         })
     }
     
@@ -77,7 +88,7 @@ router.post( '/signin',async(req,res) =>{
         message: 'signin successfully!'})
     }
 
-    return res.json({
+     res.json({
         message: 'Password does not match !'
     });
 
